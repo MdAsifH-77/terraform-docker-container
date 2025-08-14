@@ -1,0 +1,66 @@
+# SAMPLE EXECUTION LOGS (for reference only)
+# Your exact output may differ by OS, Terraform version, and provider.
+
+$ terraform init
+Initializing the backend...
+Initializing provider plugins...
+- Finding kreuzwerker/docker versions matching "~> 3.0"...
+- Installing kreuzwerker/docker v3.x.x...
+- Installed kreuzwerker/docker v3.x.x (self-signed, key ID ...)
+
+Terraform has been successfully initialized!
+You may now begin working with Terraform.
+
+$ terraform plan
+Terraform will perform the following actions:
+
+  # docker_image.nginx will be created
+  + resource "docker_image" "nginx" {
+      + id           = (known after apply)
+      + keep_locally = false
+      + name         = "nginx:latest"
+      + repo_digest  = (known after apply)
+    }
+
+  # docker_container.nginx_container will be created
+  + resource "docker_container" "nginx_container" {
+      + id          = (known after apply)
+      + image       = (known after apply)
+      + name        = "nginx-terraform"
+      + restart     = "no"
+      + must_run    = true
+      + ports {
+          + external = 8080
+          + internal = 80
+          + ip       = "0.0.0.0"
+          + protocol = "tcp"
+        }
+    }
+
+Plan: 2 to add, 0 to change, 0 to destroy.
+
+$ terraform apply -auto-approve
+docker_image.nginx: Creating...
+docker_image.nginx: Creation complete after 2s [id=sha256:...]
+docker_container.nginx_container: Creating...
+docker_container.nginx_container: Creation complete after 0s [id=...]
+Apply complete! Resources: 2 added, 0 changed, 0 destroyed.
+
+$ docker ps
+CONTAINER ID   IMAGE           COMMAND                  CREATED         STATUS         PORTS                  NAMES
+abc123def456   nginx:latest    "/docker-entrypoint.…"   5 seconds ago   Up 5 seconds   0.0.0.0:8080->80/tcp   nginx-terraform
+
+$ curl -I http://localhost:8080
+HTTP/1.1 200 OK
+Server: nginx/1.25.x
+Date: Wed, 01 Jan 2025 12:00:00 GMT
+Content-Type: text/html
+Content-Length: 615
+Connection: keep-alive
+
+$ terraform destroy -auto-approve
+docker_container.nginx_container: Destroying... [id=...]
+docker_container.nginx_container: Destruction complete after 1s
+docker_image.nginx: Destroying... [id=sha256:...]
+docker_image.nginx: Destruction complete after 1s
+Destroy complete! Resources: 2 destroyed.
